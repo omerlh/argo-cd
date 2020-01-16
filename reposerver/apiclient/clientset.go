@@ -10,13 +10,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/argoproj/argo-cd/util"
+	"github.com/argoproj/argo-cd/engine/pkg/utils/io"
 	argogrpc "github.com/argoproj/argo-cd/util/grpc"
 )
 
 // Clientset represets repository server api clients
 type Clientset interface {
-	NewRepoServerClient() (util.Closer, RepoServerServiceClient, error)
+	NewRepoServerClient() (io.Closer, RepoServerServiceClient, error)
 }
 
 type clientSet struct {
@@ -24,7 +24,7 @@ type clientSet struct {
 	timeoutSeconds int
 }
 
-func (c *clientSet) NewRepoServerClient() (util.Closer, RepoServerServiceClient, error) {
+func (c *clientSet) NewRepoServerClient() (io.Closer, RepoServerServiceClient, error) {
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithMax(3),
 		grpc_retry.WithBackoff(grpc_retry.BackoffLinear(1000 * time.Millisecond)),

@@ -11,6 +11,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/argoproj/argo-cd/engine/pkg/utils/io"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/stretchr/testify/assert"
@@ -23,16 +25,16 @@ import (
 	"k8s.io/utils/pointer"
 
 	"github.com/argoproj/argo-cd/common"
-	. "github.com/argoproj/argo-cd/errors"
+	"github.com/argoproj/argo-cd/engine/pkg/utils/diff"
+	. "github.com/argoproj/argo-cd/engine/pkg/utils/errors"
+	"github.com/argoproj/argo-cd/engine/pkg/utils/health"
+	"github.com/argoproj/argo-cd/engine/pkg/utils/kube"
 	applicationpkg "github.com/argoproj/argo-cd/pkg/apiclient/application"
 	repositorypkg "github.com/argoproj/argo-cd/pkg/apiclient/repository"
 	. "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	. "github.com/argoproj/argo-cd/test/e2e/fixture"
 	. "github.com/argoproj/argo-cd/test/e2e/fixture/app"
-	"github.com/argoproj/argo-cd/util"
 	. "github.com/argoproj/argo-cd/util/argo"
-	"github.com/argoproj/argo-cd/util/diff"
-	"github.com/argoproj/argo-cd/util/kube"
 	"github.com/argoproj/argo-cd/util/settings"
 )
 
@@ -101,7 +103,7 @@ func TestImmutableChange(t *testing.T) {
 		Then().
 		Expect(OperationPhaseIs(OperationSucceeded)).
 		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(HealthStatusHealthy)).
+		Expect(HealthIs(health.HealthStatusHealthy)).
 		When().
 		PatchFile("service.yaml", fmt.Sprintf(`[{"op": "add", "path": "/spec/clusterIP", "value": "%s"}]`, ip2)).
 		IgnoreErrors().
@@ -129,7 +131,7 @@ func TestImmutableChange(t *testing.T) {
 		Then().
 		Expect(OperationPhaseIs(OperationSucceeded)).
 		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(HealthStatusHealthy))
+		Expect(HealthIs(health.HealthStatusHealthy))
 }
 
 func TestInvalidAppProject(t *testing.T) {
@@ -196,7 +198,7 @@ func TestTrackAppStateAndSyncApp(t *testing.T) {
 		Then().
 		Expect(OperationPhaseIs(OperationSucceeded)).
 		Expect(SyncStatusIs(SyncStatusCodeSynced)).
-		Expect(HealthIs(HealthStatusHealthy)).
+		Expect(HealthIs(health.HealthStatusHealthy)).
 		Expect(Success(fmt.Sprintf("apps  Deployment  %s          guestbook-ui  OutOfSync  Missing", DeploymentNamespace()))).
 		Expect(Success(fmt.Sprintf("Service  %s          guestbook-ui  OutOfSync  Missing", DeploymentNamespace()))).
 		Expect(Success(fmt.Sprintf("Service     %s  guestbook-ui  Synced ", DeploymentNamespace()))).
@@ -303,7 +305,7 @@ func TestManipulateApplicationResources(t *testing.T) {
 
 			closer, client, err := ArgoCDClientset.NewApplicationClient()
 			assert.NoError(t, err)
-			defer util.Close(closer)
+			defer io.Close(closer)
 
 			_, err = client.DeleteResource(context.Background(), &applicationpkg.ApplicationResourceDeleteRequest{
 				Name:         &app.Name,
@@ -345,7 +347,7 @@ func assetSecretDataHidden(t *testing.T, manifest string) {
 func TestAppWithSecrets(t *testing.T) {
 	closer, client, err := ArgoCDClientset.NewApplicationClient()
 	assert.NoError(t, err)
-	defer util.Close(closer)
+	defer io.Close(closer)
 
 	Given(t).
 		Path("secrets").
@@ -443,15 +445,15 @@ func TestResourceDiffing(t *testing.T) {
 }
 
 func TestCRDs(t *testing.T) {
-	testEdgeCasesApplicationResources(t, "crd-creation", HealthStatusHealthy)
+	testEdgeCasesApplicationResources(t, "crd-creation", health.HealthStatusHealthy)
 }
 
 func TestDuplicatedResources(t *testing.T) {
-	testEdgeCasesApplicationResources(t, "duplicated-resources", HealthStatusHealthy)
+	testEdgeCasesApplicationResources(t, "duplicated-resources", health.HealthStatusHealthy)
 }
 
 func TestConfigMap(t *testing.T) {
-	testEdgeCasesApplicationResources(t, "config-map", HealthStatusHealthy, "my-map  Synced                configmap/my-map created")
+	testEdgeCasesApplicationResources(t, "config-map", health.HealthStatusHealthy, "my-map  Synced                configmap/my-map created")
 }
 
 func TestFailedConversion(t *testing.T) {
@@ -460,10 +462,10 @@ func TestFailedConversion(t *testing.T) {
 		FailOnErr(Run("", "kubectl", "delete", "apiservice", "v1beta1.metrics.k8s.io"))
 	}()
 
-	testEdgeCasesApplicationResources(t, "failed-conversion", HealthStatusProgressing)
+	testEdgeCasesApplicationResources(t, "failed-conversion", health.HealthStatusProgressing)
 }
 
-func testEdgeCasesApplicationResources(t *testing.T, appPath string, statusCode HealthStatusCode, message ...string) {
+func testEdgeCasesApplicationResources(t *testing.T, appPath string, statusCode health.HealthStatusCode, message ...string) {
 	expect := Given(t).
 		Path(appPath).
 		When().
@@ -498,7 +500,7 @@ func TestKsonnetApp(t *testing.T) {
 		And(func(app *Application) {
 			closer, client, err := ArgoCDClientset.NewRepoClient()
 			assert.NoError(t, err)
-			defer util.Close(closer)
+			defer io.Close(closer)
 
 			details, err := client.GetAppDetails(context.Background(), &repositorypkg.RepoAppDetailsQuery{
 				Source: &app.Spec.Source,
@@ -534,7 +536,7 @@ func TestResourceAction(t *testing.T) {
 
 			closer, client, err := ArgoCDClientset.NewApplicationClient()
 			assert.NoError(t, err)
-			defer util.Close(closer)
+			defer io.Close(closer)
 
 			actions, err := client.ListResourceActions(context.Background(), &applicationpkg.ApplicationResourceRequest{
 				Name:         &app.Name,
@@ -699,7 +701,7 @@ func TestPermissions(t *testing.T) {
 	time.Sleep(1 * time.Second)
 	closer, client, err := ArgoCDClientset.NewApplicationClient()
 	assert.NoError(t, err)
-	defer util.Close(closer)
+	defer io.Close(closer)
 
 	refresh := string(RefreshTypeNormal)
 	app, err := client.Get(context.Background(), &applicationpkg.ApplicationQuery{Name: &appName, Refresh: &refresh})

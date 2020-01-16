@@ -25,12 +25,12 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/argoproj/argo-cd/common"
-	"github.com/argoproj/argo-cd/errors"
-	"github.com/argoproj/argo-cd/util"
+	"github.com/argoproj/argo-cd/engine/pkg/utils/errors"
+	argoio "github.com/argoproj/argo-cd/engine/pkg/utils/io"
+	"github.com/argoproj/argo-cd/engine/pkg/utils/kube"
 	"github.com/argoproj/argo-cd/util/cli"
 	"github.com/argoproj/argo-cd/util/db"
 	"github.com/argoproj/argo-cd/util/dex"
-	"github.com/argoproj/argo-cd/util/kube"
 	"github.com/argoproj/argo-cd/util/settings"
 
 	// load the gcp plugin (required to authenticate against GKE clusters).
@@ -385,7 +385,7 @@ func NewExportCommand() *cobra.Command {
 			} else {
 				f, err := os.Create(out)
 				errors.CheckError(err)
-				defer util.Close(f)
+				defer argoio.Close(f)
 				writer = bufio.NewWriter(f)
 			}
 

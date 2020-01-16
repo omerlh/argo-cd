@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	healthutil "github.com/argoproj/argo-cd/engine/pkg/utils/health"
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	"github.com/argoproj/argo-cd/pkg/client/clientset/versioned"
 	"github.com/argoproj/argo-cd/util/assets"
@@ -65,7 +66,7 @@ func replaceFirstGroupSubMatch(re *regexp.Regexp, str string, repl string) strin
 //ServeHTTP returns badge with health and sync status for application
 //(or an error badge if wrong query or application name is given)
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	health := appv1.HealthStatusUnknown
+	health := healthutil.HealthStatusUnknown
 	status := appv1.SyncStatusCodeUnknown
 	enabled := false
 	notFound := false
@@ -90,7 +91,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	leftColor := ""
 	rightColor := ""
-	leftText := health
+	leftText := string(health)
 	rightText := string(status)
 	if notFound {
 		leftText = "Not Found"
@@ -98,15 +99,15 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch health {
-	case appv1.HealthStatusHealthy:
+	case healthutil.HealthStatusHealthy:
 		leftColor = success
-	case appv1.HealthStatusProgressing:
+	case healthutil.HealthStatusProgressing:
 		leftColor = progressing
-	case appv1.HealthStatusSuspended:
+	case healthutil.HealthStatusSuspended:
 		leftColor = suspended
-	case appv1.HealthStatusDegraded:
+	case healthutil.HealthStatusDegraded:
 		leftColor = failed
-	case appv1.HealthStatusMissing:
+	case healthutil.HealthStatusMissing:
 		leftColor = unknown
 	default:
 		leftColor = unknown

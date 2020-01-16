@@ -1,6 +1,7 @@
 package kubetest
 
 import (
+	"github.com/argoproj/argo-cd/engine/pkg/utils/io"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -8,8 +9,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 
-	"github.com/argoproj/argo-cd/util"
-	"github.com/argoproj/argo-cd/util/kube"
+	"github.com/argoproj/argo-cd/engine/pkg/utils/kube"
 )
 
 type KubectlOutput struct {
@@ -68,5 +68,5 @@ func (k *MockKubectlCmd) GetServerVersion(config *rest.Config) (string, error) {
 	return k.Version, nil
 }
 
-func (k *MockKubectlCmd) SetOnKubectlRun(onKubectlRun func(command string) (util.Closer, error)) {
+func (k *MockKubectlCmd) SetOnKubectlRun(onKubectlRun func(command string) (io.Closer, error)) {
 }

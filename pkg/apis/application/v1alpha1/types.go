@@ -28,6 +28,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd/api"
 
 	"github.com/argoproj/argo-cd/common"
+	"github.com/argoproj/argo-cd/engine/pkg/utils/health"
 	"github.com/argoproj/argo-cd/util/cert"
 	"github.com/argoproj/argo-cd/util/git"
 	"github.com/argoproj/argo-cd/util/helm"
@@ -801,20 +802,9 @@ type SyncStatus struct {
 }
 
 type HealthStatus struct {
-	Status  HealthStatusCode `json:"status,omitempty" protobuf:"bytes,1,opt,name=status"`
-	Message string           `json:"message,omitempty" protobuf:"bytes,2,opt,name=message"`
+	Status  health.HealthStatusCode `json:"status,omitempty" protobuf:"bytes,1,opt,name=status"`
+	Message string                  `json:"message,omitempty" protobuf:"bytes,2,opt,name=message"`
 }
-
-type HealthStatusCode = string
-
-const (
-	HealthStatusUnknown     HealthStatusCode = "Unknown"
-	HealthStatusProgressing HealthStatusCode = "Progressing"
-	HealthStatusHealthy     HealthStatusCode = "Healthy"
-	HealthStatusSuspended   HealthStatusCode = "Suspended"
-	HealthStatusDegraded    HealthStatusCode = "Degraded"
-	HealthStatusMissing     HealthStatusCode = "Missing"
-)
 
 // InfoItem contains human readable information about object
 type InfoItem struct {
