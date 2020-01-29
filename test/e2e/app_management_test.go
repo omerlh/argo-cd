@@ -11,10 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/argoproj/argo-cd/engine/pkg/utils/io"
-
 	log "github.com/sirupsen/logrus"
-
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	networkingv1beta "k8s.io/api/networking/v1beta1"
@@ -28,7 +25,9 @@ import (
 	"github.com/argoproj/argo-cd/engine/pkg/utils/diff"
 	. "github.com/argoproj/argo-cd/engine/pkg/utils/errors"
 	"github.com/argoproj/argo-cd/engine/pkg/utils/health"
+	"github.com/argoproj/argo-cd/engine/pkg/utils/io"
 	"github.com/argoproj/argo-cd/engine/pkg/utils/kube"
+	. "github.com/argoproj/argo-cd/engine/pkg/utils/kube/sync/common"
 	applicationpkg "github.com/argoproj/argo-cd/pkg/apiclient/application"
 	repositorypkg "github.com/argoproj/argo-cd/pkg/apiclient/repository"
 	. "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
