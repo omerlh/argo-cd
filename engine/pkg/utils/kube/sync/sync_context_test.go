@@ -15,9 +15,9 @@ import (
 	"k8s.io/client-go/rest"
 	testcore "k8s.io/client-go/testing"
 
-	"github.com/argoproj/argo-cd/common"
 	"github.com/argoproj/argo-cd/engine/pkg/utils/kube"
 	"github.com/argoproj/argo-cd/engine/pkg/utils/kube/kubetest"
+	"github.com/argoproj/argo-cd/engine/pkg/utils/kube/sync/common"
 	synccommon "github.com/argoproj/argo-cd/engine/pkg/utils/kube/sync/common"
 	"github.com/argoproj/argo-cd/test"
 )
