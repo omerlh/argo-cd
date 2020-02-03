@@ -19,7 +19,6 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 
-	"github.com/argoproj/argo-cd/controller/metrics"
 	"github.com/argoproj/argo-cd/engine/pkg/utils/health"
 	"github.com/argoproj/argo-cd/engine/pkg/utils/kube"
 )
@@ -34,6 +33,14 @@ type apiMeta struct {
 	namespaced      bool
 	resourceVersion string
 	watchCancel     context.CancelFunc
+}
+
+type ClusterInfo struct {
+	Server            string
+	K8SVersion        string
+	ResourcesCount    int
+	APIsCount         int
+	LastCacheSyncTime *time.Time
 }
 
 type Settings struct {
@@ -55,7 +62,7 @@ type ClusterCache interface {
 	IterateHierarchy(key kube.ResourceKey, action func(resource *Resource, namespaceResources map[kube.ResourceKey]*Resource))
 	IsNamespaced(gk schema.GroupKind) bool
 	GetManagedLiveObjs(targetObjs []*unstructured.Unstructured, isManaged func(r *Resource) bool) (map[kube.ResourceKey]*unstructured.Unstructured, error)
-	GetClusterInfo() metrics.ClusterInfo
+	GetClusterInfo() ClusterInfo
 }
 
 func NewClusterCache(settings Settings, config *rest.Config, namespaces []string, kubectl kube.Kubectl, handlers EventHandlers) *clusterCache {
@@ -594,10 +601,10 @@ func (c *clusterCache) onNodeRemoved(key kube.ResourceKey) {
 	}
 }
 
-func (c *clusterCache) GetClusterInfo() metrics.ClusterInfo {
+func (c *clusterCache) GetClusterInfo() ClusterInfo {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	return metrics.ClusterInfo{
+	return ClusterInfo{
 		APIsCount:         len(c.apisMeta),
 		K8SVersion:        c.serverVersion,
 		ResourcesCount:    len(c.resources),
