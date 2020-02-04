@@ -24,7 +24,7 @@ import (
 	kubeutil "github.com/argoproj/argo-cd/engine/pkg/utils/kube"
 	"github.com/argoproj/argo-cd/engine/pkg/utils/kube/sync/common"
 	"github.com/argoproj/argo-cd/engine/pkg/utils/kube/sync/hook"
-	resourceutil "github.com/argoproj/argo-cd/engine/pkg/utils/resource"
+	resourceutil "github.com/argoproj/argo-cd/engine/pkg/utils/kube/sync/resource"
 )
 
 type reconciledResource struct {
